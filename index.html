@@ -21,7 +21,6 @@
       align-items: center;
       justify-content: center;
       padding: 10px;
-      overflow: hidden;
     }
     .container {
       background: rgba(255, 255, 255, 0.05);
@@ -105,7 +104,8 @@
 </head>
 <body>
   <div class="container">
-    <img class="logo" src="rifa_toco.jpg" alt="Rifa do Toquinho" />
+    <!-- Remova a imagem se ela não estiver no mesmo diretório -->
+    <img class="logo" src="rifa_toco.jpg" alt="Rifa do Toquinho" onerror="this.style.display='none'" />
     <p>Defina o intervalo da rifa e quantos prêmios sortear:</p>
     <input type="number" id="min" placeholder="De" />
     <input type="number" id="max" placeholder="Até" />
@@ -115,13 +115,16 @@
       <input type="checkbox" id="noRepeat" /> Não repetir números
     </label>
     <div style="display: flex; justify-content: space-between;">
-      <button onclick="sortear()">Sortear</button>
-      <button onclick="limpar()">Limpar</button>
+      <button id="btnSortear">Sortear</button>
+      <button id="btnLimpar">Limpar</button>
     </div>
     <div id="result"></div>
   </div>
 
   <script>
+    document.getElementById("btnSortear").addEventListener("click", sortear);
+    document.getElementById("btnLimpar").addEventListener("click", limpar);
+
     function exibirPopup(texto) {
       const popup = document.createElement("div");
       popup.className = "popup";
@@ -142,15 +145,19 @@
         return;
       }
 
-      let numbers = [], sorted = [];
+      let sorted = [];
 
       if (noRepeat) {
         if (quantity > (max - min + 1)) {
           resultDiv.innerHTML = "Impossível sortear essa quantidade sem repetição.";
           return;
         }
-        numbers = Array.from({ length: max - min + 1 }, (_, i) => i + min).sort(() => Math.random() - 0.5);
-        sorted = numbers.slice(0, quantity);
+        let available = [];
+        for (let i = min; i <= max; i++) available.push(i);
+        for (let i = 0; i < quantity; i++) {
+          const index = Math.floor(Math.random() * available.length);
+          sorted.push(available.splice(index, 1)[0]);
+        }
       } else {
         for (let i = 0; i < quantity; i++) {
           sorted.push(Math.floor(Math.random() * (max - min + 1)) + min);
