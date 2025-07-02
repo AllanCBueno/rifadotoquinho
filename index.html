@@ -2,18 +2,12 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rifa do Toquinho</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
-    body {
+      margin: 0; padding: 0; height: 100%;
       font-family: Arial, sans-serif;
       background-color: #000;
       color: #fff;
@@ -32,56 +26,37 @@
       backdrop-filter: blur(5px);
     }
     input[type="number"] {
-      padding: 8px;
       width: 100%;
-      font-size: 16px;
+      padding: 8px;
+      margin: 5px 0;
       border-radius: 8px;
       border: none;
+      font-size: 16px;
       background: #333;
       color: #fff;
-      margin: 4px 0;
     }
     button {
-      padding: 10px 15px;
+      padding: 10px;
+      margin-top: 10px;
       font-size: 16px;
-      margin: 8px 4px 0 4px;
-      cursor: pointer;
-      background-color: #ff4500;
       border: none;
       border-radius: 8px;
-      color: white;
-      width: 45%;
+      background-color: #ff4500;
+      color: #fff;
+      cursor: pointer;
+      width: 48%;
     }
-    button:hover {
-      background-color: #e63e00;
-    }
+    button:hover { background-color: #e63e00; }
     #result {
       margin-top: 10px;
-      font-size: 18px;
-      font-weight: bold;
       color: #ffa500;
-      word-wrap: break-word;
+      font-weight: bold;
+      font-size: 16px;
     }
     label {
-      color: #ccc;
       display: block;
-      text-align: left;
-      margin-top: 8px;
-      font-size: 14px;
-    }
-    img.logo {
-      max-width: 100%;
-      height: auto;
-      margin-bottom: 10px;
-      border-radius: 50%;
-      border: 3px solid #ff4500;
-    }
-    .field-label {
       margin-top: 10px;
-      font-size: 15px;
       color: #ccc;
-      display: block;
-      text-align: center;
     }
     .popup {
       position: fixed;
@@ -93,38 +68,39 @@
       border-radius: 12px;
       padding: 20px;
       color: #ffa500;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: bold;
       box-shadow: 0 0 20px rgba(255, 69, 0, 0.6);
       z-index: 999;
-      max-width: 90%;
       text-align: center;
+    }
+    img.logo {
+      width: 100%;
+      max-width: 200px;
+      display: block;
+      margin: 0 auto 10px;
+      border-radius: 50%;
+      border: 3px solid #ff4500;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Remova a imagem se ela não estiver no mesmo diretório -->
-    <img class="logo" src="rifa_toco.jpg" alt="Rifa do Toquinho" onerror="this.style.display='none'" />
+    <img src="rifa_toco.jpg" alt="Rifa do Toquinho" class="logo">
     <p>Defina o intervalo da rifa e quantos prêmios sortear:</p>
-    <input type="number" id="min" placeholder="De" />
-    <input type="number" id="max" placeholder="Até" />
-    <label class="field-label" for="quantity">Quantidade de prêmios</label>
-    <input type="number" id="quantity" />
-    <label>
-      <input type="checkbox" id="noRepeat" /> Não repetir números
-    </label>
+    <input type="number" id="min" placeholder="De">
+    <input type="number" id="max" placeholder="Até">
+    <label for="quantity">Quantidade de prêmios</label>
+    <input type="number" id="quantity" placeholder="Quantidade">
+    <label><input type="checkbox" id="noRepeat"> Não repetir números</label>
     <div style="display: flex; justify-content: space-between;">
-      <button id="btnSortear">Sortear</button>
-      <button id="btnLimpar">Limpar</button>
+      <button onclick="sortear()">Sortear</button>
+      <button onclick="limpar()">Limpar</button>
     </div>
     <div id="result"></div>
   </div>
 
   <script>
-    document.getElementById("btnSortear").addEventListener("click", sortear);
-    document.getElementById("btnLimpar").addEventListener("click", limpar);
-
     function exibirPopup(texto) {
       const popup = document.createElement("div");
       popup.className = "popup";
@@ -141,22 +117,23 @@
       const resultDiv = document.getElementById("result");
 
       if (isNaN(min) || isNaN(max) || isNaN(quantity) || min >= max || quantity < 1) {
-        resultDiv.innerHTML = "Preencha os campos corretamente (mín < máx e quantidade válida).";
+        resultDiv.innerHTML = "Preencha os campos corretamente.";
         return;
       }
 
       let sorted = [];
 
       if (noRepeat) {
-        if (quantity > (max - min + 1)) {
+        const totalNumbers = max - min + 1;
+        if (quantity > totalNumbers) {
           resultDiv.innerHTML = "Impossível sortear essa quantidade sem repetição.";
           return;
         }
-        let available = [];
-        for (let i = min; i <= max; i++) available.push(i);
+
+        let allNumbers = Array.from({ length: totalNumbers }, (_, i) => i + min);
         for (let i = 0; i < quantity; i++) {
-          const index = Math.floor(Math.random() * available.length);
-          sorted.push(available.splice(index, 1)[0]);
+          const randIndex = Math.floor(Math.random() * allNumbers.length);
+          sorted.push(allNumbers.splice(randIndex, 1)[0]);
         }
       } else {
         for (let i = 0; i < quantity; i++) {
@@ -164,15 +141,9 @@
         }
       }
 
-      let resultado = "<strong>Números sorteados:</strong><br>";
-      let resultadoPopup = "";
-      sorted.forEach((num, index) => {
-        resultado += ${index + 1}º prêmio: ${num}<br>;
-        resultadoPopup += ${index + 1}º prêmio: ${num}<br>;
-      });
-
-      resultDiv.innerHTML = resultado;
-      exibirPopup(resultadoPopup);
+      let texto = sorted.map((num, i) => `${i + 1}º prêmio: ${num}`).join("<br>");
+      resultDiv.innerHTML = `<strong>Números sorteados:</strong><br>${texto}`;
+      exibirPopup(texto);
     }
 
     function limpar() {
