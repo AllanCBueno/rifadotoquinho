@@ -73,6 +73,12 @@
       box-shadow: 0 0 20px rgba(255, 69, 0, 0.6);
       z-index: 999;
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      width: auto;
+      max-width: 90%;
     }
     img.logo {
       width: 100%;
@@ -82,34 +88,26 @@
       border-radius: 50%;
       border: 3px solid #ff4500;
     }
-
-    /* Overlay e contagem regressiva */
     .overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.95);
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.95);
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
-      flex-direction: column;
-      color: #ffa500;
-      font-size: 100px;
-      font-weight: bold;
-      animation: fadeIn 0.5s;
+      z-index: 998;
     }
-
     .countdown-number {
-      animation: grow 1s ease-in-out forwards;
+      font-size: 100px;
+      color: #ffa500;
+      animation: grow 0.9s ease-in-out;
     }
-
     @keyframes grow {
-      0% { transform: scale(0.5); opacity: 0; }
-      50% { transform: scale(1.8); opacity: 1; }
-      100% { transform: scale(1); opacity: 0; }
+      0% { transform: scale(0.2); opacity: 0; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(1); }
     }
   </style>
 </head>
@@ -130,10 +128,16 @@
   </div>
 
   <script>
-    function exibirPopup(texto) {
+    function exibirPopup(sorted) {
       const popup = document.createElement("div");
       popup.className = "popup";
-      popup.innerHTML = texto;
+
+      sorted.forEach((num, i) => {
+        const premio = document.createElement("div");
+        premio.textContent = `${i + 1}º prêmio: ${num}`;
+        popup.appendChild(premio);
+      });
+
       document.body.appendChild(popup);
       setTimeout(() => popup.remove(), 5000);
     }
@@ -150,22 +154,19 @@
         return;
       }
 
-      // Cria o overlay escuro
       const overlay = document.createElement("div");
       overlay.className = "overlay";
       document.body.appendChild(overlay);
 
       let countdown = 5;
-
       const interval = setInterval(() => {
         overlay.innerHTML = `<div class="countdown-number">${countdown}</div>`;
         countdown--;
 
         if (countdown < 0) {
           clearInterval(interval);
-          document.body.removeChild(overlay); // Remove o overlay
+          document.body.removeChild(overlay);
 
-          // Realiza o sorteio
           let sorted = [];
 
           if (noRepeat) {
@@ -186,11 +187,13 @@
             }
           }
 
-          let texto = sorted.map((num, i) => `${i + 1}º prêmio: ${num}`).join("<br>");
-          resultDiv.innerHTML = `<strong>Números sorteados:</strong><br>${texto}`;
-          exibirPopup(texto);
+          // Exibir no resultado da página
+          resultDiv.innerHTML = `<strong>Números sorteados:</strong><br>${sorted.map((n, i) => `${i + 1}º prêmio: ${n}`).join("<br>")}`;
+
+          // Exibir popup
+          exibirPopup(sorted);
         }
-      }, 1000); // A cada 1 segundo
+      }, 1000);
     }
 
     function limpar() {
