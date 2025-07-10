@@ -82,6 +82,35 @@
       border-radius: 50%;
       border: 3px solid #ff4500;
     }
+
+    /* Overlay e contagem regressiva */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      flex-direction: column;
+      color: #ffa500;
+      font-size: 100px;
+      font-weight: bold;
+      animation: fadeIn 0.5s;
+    }
+
+    .countdown-number {
+      animation: grow 1s ease-in-out forwards;
+    }
+
+    @keyframes grow {
+      0% { transform: scale(0.5); opacity: 0; }
+      50% { transform: scale(1.8); opacity: 1; }
+      100% { transform: scale(1); opacity: 0; }
+    }
   </style>
 </head>
 <body>
@@ -121,29 +150,47 @@
         return;
       }
 
-      let sorted = [];
+      // Cria o overlay escuro
+      const overlay = document.createElement("div");
+      overlay.className = "overlay";
+      document.body.appendChild(overlay);
 
-      if (noRepeat) {
-        const totalNumbers = max - min + 1;
-        if (quantity > totalNumbers) {
-          resultDiv.innerHTML = "Impossível sortear essa quantidade sem repetição.";
-          return;
-        }
+      let countdown = 5;
 
-        let allNumbers = Array.from({ length: totalNumbers }, (_, i) => i + min);
-        for (let i = 0; i < quantity; i++) {
-          const randIndex = Math.floor(Math.random() * allNumbers.length);
-          sorted.push(allNumbers.splice(randIndex, 1)[0]);
-        }
-      } else {
-        for (let i = 0; i < quantity; i++) {
-          sorted.push(Math.floor(Math.random() * (max - min + 1)) + min);
-        }
-      }
+      const interval = setInterval(() => {
+        overlay.innerHTML = `<div class="countdown-number">${countdown}</div>`;
+        countdown--;
 
-      let texto = sorted.map((num, i) => `${i + 1}º prêmio: ${num}`).join("<br>");
-      resultDiv.innerHTML = `<strong>Números sorteados:</strong><br>${texto}`;
-      exibirPopup(texto);
+        if (countdown < 0) {
+          clearInterval(interval);
+          document.body.removeChild(overlay); // Remove o overlay
+
+          // Realiza o sorteio
+          let sorted = [];
+
+          if (noRepeat) {
+            const totalNumbers = max - min + 1;
+            if (quantity > totalNumbers) {
+              resultDiv.innerHTML = "Impossível sortear essa quantidade sem repetição.";
+              return;
+            }
+
+            let allNumbers = Array.from({ length: totalNumbers }, (_, i) => i + min);
+            for (let i = 0; i < quantity; i++) {
+              const randIndex = Math.floor(Math.random() * allNumbers.length);
+              sorted.push(allNumbers.splice(randIndex, 1)[0]);
+            }
+          } else {
+            for (let i = 0; i < quantity; i++) {
+              sorted.push(Math.floor(Math.random() * (max - min + 1)) + min);
+            }
+          }
+
+          let texto = sorted.map((num, i) => `${i + 1}º prêmio: ${num}`).join("<br>");
+          resultDiv.innerHTML = `<strong>Números sorteados:</strong><br>${texto}`;
+          exibirPopup(texto);
+        }
+      }, 1000); // A cada 1 segundo
     }
 
     function limpar() {
